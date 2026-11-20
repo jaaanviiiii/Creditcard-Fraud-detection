@@ -1,0 +1,43 @@
+{
+  "n_rows": 284807,
+  "fraud_count": 492,
+  "genuine_count": 284315,
+  "test_count": 56962,
+  "fraud_test_count": 98,
+  "models": {
+    "Logistic Regression": {
+      "accuracy": 0.9991397773954567,
+      "precision": 0.8266666666666667,
+      "recall": 0.6326530612244898,
+      "f1": 0.7167630057803468,
+      "roc_auc": 0.9605494455801453,
+      "confusion_matrix": [
+        [
+          56851,
+          13
+        ],
+        [
+          36,
+          62
+        ]
+      ]
+    },
+    "Random Forest": {
+      "accuracy": 0.9995962220427653,
+      "precision": 0.9411764705882353,
+      "recall": 0.8163265306122449,
+      "f1": 0.8743169398907104,
+      "roc_auc": 0.9649751501613588,
+      "confusion_matrix": [
+        [
+          56859,
+          5
+        ],
+        [
+          18,
+          80
+        ]
+      ]
+    }
+  }
+}
