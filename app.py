@@ -10,22 +10,351 @@ from sklearn.metrics import confusion_matrix
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title='FraudShield | Credit Card Fraud Detection',page_icon='🛡️',layout='wide')
 st.markdown('''<style>
-/* Presentation mode: hide Streamlit's Deploy, top-right menu and toolbar. */
+/* Presentation mode: hide Streamlit's Deploy, top-right menu and toolbar */
 .stAppDeployButton, [data-testid="stAppDeployButton"],
 [data-testid="stToolbar"], [data-testid="stMainMenu"],
 [data-testid="stDecoration"], [data-testid="stStatusWidget"],
 #MainMenu, header[data-testid="stHeader"] {display:none !important; visibility:hidden !important;}
 footer {display:none !important;}
-.stApp {background: #0a1020;color:#f2f5ff;}
-.block-container {padding-top: 1.4rem;max-width:1200px;}
-.hero {padding:28px 32px;border:1px solid #263859;border-radius:22px;background:linear-gradient(115deg,#142446,#101629);margin-bottom:20px;}
-.eyebrow {font-size:13px;font-weight:700;color:#81d1ff;letter-spacing:2px;}
-.hero h1 {font-size:38px;color:#f8fbff;margin:8px 0;}
-.hero p {color:#b3c7e4;margin:0;}
-.result {padding:22px;border-radius:16px;border:1px solid #375078;background:#15233b;}
-.fraud {border-color:#ef7474;background:#3a1c2b;}
-.safe {border-color:#5dd7b8;background:#12332e;}
-.small {color:#acbad2;font-size:14px;}
+
+/* Global theme & layout */
+.stApp {
+    background-color: #0b1120 !important;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.22) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(14, 116, 144, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.7) 0px, transparent 50%) !important;
+    color: #f8fafc !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.block-container {
+    padding-top: 1.6rem !important;
+    padding-bottom: 3rem !important;
+    max-width: 1220px !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #f8fafc !important;
+    font-weight: 700 !important;
+}
+
+/* Hero card */
+.hero {
+    padding: 26px 32px;
+    border: 1px solid #1e293b;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(19, 31, 56, 0.95) 0%, rgba(13, 21, 38, 0.98) 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    margin-bottom: 24px;
+}
+.eyebrow {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+.hero h1 {
+    font-size: 34px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 4px 0 8px 0;
+}
+.hero p {
+    color: #94a3b8;
+    font-size: 14.5px;
+    margin: 0;
+}
+
+/* Navigation Tabs */
+div[data-testid="stTabs"] {
+    border-bottom: 1px solid #1e293b !important;
+    margin-bottom: 20px !important;
+}
+div[data-testid="stTabs"] button {
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    font-size: 14.5px !important;
+    padding: 10px 18px !important;
+    border-radius: 8px 8px 0 0 !important;
+    transition: all 0.2s ease !important;
+    background: transparent !important;
+    border: none !important;
+}
+div[data-testid="stTabs"] button:hover {
+    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+div[data-testid="stTabs"] button[aria-selected="true"] {
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+}
+
+/* Form labels and captions */
+.stWidgetLabel p, label[data-testid="stWidgetLabel"] p, label p {
+    color: #cbd5e1 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+.stCaption, [data-testid="stCaptionContainer"] p {
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+}
+
+/* Radio buttons */
+div[data-testid="stRadio"] label {
+    cursor: pointer !important;
+}
+div[data-testid="stRadio"] label p,
+div[data-testid="stRadio"] div[data-testid="stMarkdownContainer"] p {
+    color: #f1f5f9 !important;
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+}
+div[data-testid="stRadio"] [data-baseweb="radio"] span {
+    border-color: #475569 !important;
+}
+div[data-testid="stRadio"] [data-baseweb="radio"] input:checked + div {
+    background-color: #38bdf8 !important;
+    border-color: #38bdf8 !important;
+}
+
+/* Selectboxes & Dropdowns */
+div[data-baseweb="select"] > div {
+    background-color: #131f37 !important;
+    border: 1px solid #233554 !important;
+    border-radius: 10px !important;
+    color: #f8fafc !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.2s ease !important;
+}
+div[data-baseweb="select"] > div:hover,
+div[data-baseweb="select"] > div:focus-within {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 1px #38bdf8, 0 0 10px rgba(56, 189, 248, 0.2) !important;
+}
+div[data-baseweb="select"] span {
+    color: #f8fafc !important;
+    font-weight: 500 !important;
+}
+div[data-baseweb="select"] svg {
+    fill: #94a3b8 !important;
+}
+div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
+    background-color: #131f37 !important;
+    border: 1px solid #2a3c5a !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+li[role="option"] {
+    color: #f1f5f9 !important;
+    background-color: transparent !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+}
+li[role="option"]:hover, li[role="option"][aria-selected="true"] {
+    background-color: #1e2e4f !important;
+    color: #38bdf8 !important;
+}
+
+/* Number inputs */
+div[data-baseweb="input"] > div {
+    background-color: #131f37 !important;
+    border: 1px solid #233554 !important;
+    border-radius: 8px !important;
+    color: #f8fafc !important;
+}
+div[data-baseweb="input"] input {
+    color: #f8fafc !important;
+}
+div[data-baseweb="input"] > div:focus-within {
+    border-color: #38bdf8 !important;
+}
+
+/* Primary Button (Detect Fraud) */
+button[kind="primary"], div[data-testid="stButton"] > button[kind="primary"] {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #3b82f6 !important;
+    border-radius: 12px !important;
+    padding: 12px 20px !important;
+    font-size: 15.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.2s ease !important;
+}
+button[kind="primary"]:hover, div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    box-shadow: 0 6px 22px rgba(59, 130, 246, 0.6) !important;
+    transform: translateY(-1px) !important;
+}
+button[kind="primary"]:active, div[data-testid="stButton"] > button[kind="primary"]:active {
+    transform: translateY(0px) !important;
+}
+
+/* Secondary Button (Downloads, Form submit) */
+button[kind="secondary"], div[data-testid="stDownloadButton"] > button, div[data-testid="stFormSubmitButton"] > button {
+    background: #131f37 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #2a3c5a !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+button[kind="secondary"]:hover, div[data-testid="stDownloadButton"] > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    border-color: #38bdf8 !important;
+    color: #38bdf8 !important;
+    background: #172644 !important;
+}
+
+/* Expander */
+div[data-testid="stExpander"] {
+    background: #131f37 !important;
+    border: 1px solid #233554 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+div[data-testid="stExpander"] details summary {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+}
+div[data-testid="stExpander"] details summary:hover {
+    color: #38bdf8 !important;
+}
+div[data-testid="stExpander"] details summary svg {
+    fill: #94a3b8 !important;
+}
+
+/* Initial state card */
+.placeholder-card {
+    padding: 26px 28px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(19, 31, 55, 0.7) 0%, rgba(13, 22, 38, 0.9) 100%);
+    border: 1px solid #20314d;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    margin-bottom: 16px;
+}
+.placeholder-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+}
+.placeholder-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin: 0;
+}
+.placeholder-card strong {
+    color: #38bdf8;
+}
+
+/* Detection Result Cards */
+.result {
+    padding: 24px 28px;
+    border-radius: 16px;
+    border: 1px solid #2a3c5a;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    margin-bottom: 18px;
+}
+.result .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+.result h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 4px 0 6px 0;
+}
+.result h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 4px 0 10px 0;
+}
+.result p {
+    margin: 0;
+    font-size: 14.5px;
+}
+
+.fraud {
+    border: 1px solid #ef4444 !important;
+    background: linear-gradient(135deg, rgba(69, 10, 10, 0.7) 0%, rgba(30, 8, 12, 0.85) 100%) !important;
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.25), inset 0 0 20px rgba(239, 68, 68, 0.08) !important;
+}
+.fraud .badge {
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+.fraud h2 { color: #f87171 !important; }
+.fraud h3 { color: #fca5a5 !important; }
+.fraud p { color: #fecaca !important; }
+
+.safe {
+    border: 1px solid #10b981 !important;
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.6) 0%, rgba(4, 30, 24, 0.85) 100%) !important;
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.25), inset 0 0 20px rgba(16, 185, 129, 0.08) !important;
+}
+.safe .badge {
+    background: rgba(16, 185, 129, 0.25) !important;
+    color: #6ee7b7 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+.safe h2 { color: #34d399 !important; }
+.safe h3 { color: #a7f3d0 !important; }
+.safe p { color: #d1fae5 !important; }
+
+/* Metrics */
+div[data-testid="stMetric"] {
+    background: #131f37 !important;
+    border: 1px solid #233554 !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+div[data-testid="stMetricLabel"] p {
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+}
+div[data-testid="stMetricValue"] div {
+    color: #ffffff !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+}
+
+/* Callout alerts */
+div[data-testid="stAlert"] {
+    background: #111e35 !important;
+    border: 1px solid #233a60 !important;
+    color: #cbd5e1 !important;
+    border-radius: 12px !important;
+}
+div[data-testid="stAlert"] p {
+    color: #cbd5e1 !important;
+}
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -83,7 +412,7 @@ with nav[0]:
             scaled=scaler.transform(x)
             pred=int(models[model_name].predict(scaled)[0])
             p=float(models[model_name].predict_proba(scaled)[0,1])
-            st.markdown(f'''<div class="result {'fraud' if pred else 'safe'}"><div class="small">MODEL PREDICTION</div><h2>{'🚨 FRAUD SUSPECTED' if pred else '✅ GENUINE TRANSACTION'}</h2><h3>{p*100:.2f}% estimated fraud probability</h3><p>{'This transaction is flagged for review.' if pred else 'The classifier considers this transaction low risk.'}</p></div>''',unsafe_allow_html=True)
+            st.markdown(f'''<div class="result {'fraud' if pred else 'safe'}"><div class="badge">MODEL PREDICTION</div><h2>{'🚨 FRAUD SUSPECTED' if pred else '✅ GENUINE TRANSACTION'}</h2><h3>{p*100:.2f}% estimated fraud probability</h3><p>{'This transaction is flagged for review.' if pred else 'The classifier considers this transaction low risk.'}</p></div>''',unsafe_allow_html=True)
             st.progress(min(max(p,0.),1.))
             st.write('**Selected algorithm:**',model_name)
             if chosen.startswith('Sample'):
@@ -96,7 +425,7 @@ with nav[0]:
             st.write('**Both models on this transaction**')
             st.dataframe(pd.DataFrame(comparison),hide_index=True,use_container_width=True)
         else:
-            st.info('Choose a sample on the left, then click **Detect Fraud** to display the prediction.')
+            st.markdown('''<div class="placeholder-card"><div class="placeholder-title">⚡ Awaiting Input</div><p>Choose a sample on the left, then click <strong>Detect Fraud</strong> to display the real-time prediction and risk analysis.</p></div>''',unsafe_allow_html=True)
         st.caption('Educational demonstration only. A model prediction is not proof of fraud and should not be used alone for financial decisions.')
 
 with nav[1]:
